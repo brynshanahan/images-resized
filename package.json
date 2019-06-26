@@ -1,0 +1,17 @@
+{
+  "name": "image-resizer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ed.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/plugin-proposal-decorators": "^7.4.4",
+    "comlink": "^4.0.1"
+  }
+}

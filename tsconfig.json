@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "target": "es5",
+    "lib": ["es2017", "es2017.object", "dom"],
+    "allowSyntheticDefaultImports": true,
+    "preserveConstEnums": false,
+    "sourceMap": true,
+    "module": "esnext",
+    "noImplicitAny": true,
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "squoosh/*": ["./src/lib/squoosh/*"]
+    }
+  },
+  "exclude": ["node_modules"]
+}
