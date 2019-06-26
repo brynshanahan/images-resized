@@ -1,3 +1,1 @@
-import App from './src/app'
-
-App()
+import './src/index'

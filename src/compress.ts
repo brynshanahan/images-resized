@@ -1,27 +1,20 @@
-import {
-  EncoderState,
-  EncoderType,
-  EncoderOptions,
-  encoderMap,
-} from 'squoosh/src/codecs/encoders'
-import Processor from 'squoosh/src/codecs/processor'
-import {
-  identity,
-  optiPNG,
-  mozJPEG,
-  webP,
-  browserPNG,
-  browserJPEG,
-  browserWebP,
-  browserGIF,
-  browserTIFF,
-  browserJP2,
-  browserBMP,
-  browserPDF,
-} from './encoders'
-import { Fileish } from './fileish'
+import { EncoderState, encoderMap } from './codecs-api/encoders'
+import Processor from './codecs-api/processor'
+import { Fileish } from 'squoosh/src/lib/initial-util'
+import * as identity from 'src/codecs-api/identity/encoder-meta'
+import * as optiPNG from 'src/codecs-api/optipng/encoder-meta'
+import * as mozJPEG from 'src/codecs-api/mozjpeg/encoder-meta'
+import * as webP from 'src/codecs-api/webp/encoder-meta'
+import * as browserPNG from 'src/codecs-api/browser-png/encoder-meta'
+import * as browserJPEG from 'src/codecs-api/browser-jpeg/encoder-meta'
+import * as browserWebP from 'src/codecs-api/browser-webp/encoder-meta'
+import * as browserGIF from 'src/codecs-api/browser-gif/encoder-meta'
+import * as browserTIFF from 'src/codecs-api/browser-tiff/encoder-meta'
+import * as browserJP2 from 'src/codecs-api/browser-jp2/encoder-meta'
+import * as browserBMP from 'src/codecs-api/browser-bmp/encoder-meta'
+import * as browserPDF from 'src/codecs-api/browser-pdf/encoder-meta'
 
-async function compressImage(
+async function compressImageData(
   image: ImageData,
   encodeData: EncoderState,
   sourceFilename: string,
@@ -65,4 +58,4 @@ async function compressImage(
   )
 }
 
-export default compressImage
+export default compressImageData

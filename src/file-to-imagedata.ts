@@ -1,11 +1,11 @@
-import Processor from './processor'
-import webpDataUrl from './tiny.webp'
-import { nativeDecode, canDecodeImage } from 'src/util/image/decode-image'
-import { sniffMimeType } from 'src/util/files/sniff-mime-type'
+import Processor from './codecs-api/processor'
+import webpDataUrl from './codecs-api/tiny.webp'
+import { nativeDecode, canDecodeImage } from './util/image/decode-image'
+import { sniffMimeType } from './util/files/sniff-mime-type'
 
 const nativeWebPSupported = canDecodeImage(webpDataUrl)
 
-export async function decodeImage(
+export async function fileToImageData(
   blob: Blob,
   processor: Processor
 ): Promise<ImageData> {

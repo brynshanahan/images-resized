@@ -49,7 +49,7 @@ export async function resize(
 ): Promise<ImageData> {
   let input = data
 
-  if (opts.fitMethod === 'contain') {
+  if (opts.fit === 'contain') {
     const { sx, sy, sw, sh } = getContainOffsets(
       data.width,
       data.height,

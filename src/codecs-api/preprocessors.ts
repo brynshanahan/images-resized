@@ -1,14 +1,18 @@
 import {
-  QuantizeOptions, defaultOptions as quantizerDefaultOptions,
-} from './imagequant/processor-meta';
-import { ResizeOptions, defaultOptions as resizeDefaultOptions } from './resize/processor-meta';
+  QuantizeOptions,
+  defaultOptions as quantizerDefaultOptions,
+} from './imagequant/processor-meta'
+import {
+  ResizeOptions,
+  defaultResizeOptions as resizeDefaultOptions,
+} from './resize/processor-meta'
 
 interface Enableable {
-  enabled: boolean;
+  enabled: boolean
 }
 export interface PreprocessorState {
-  quantizer: Enableable & QuantizeOptions;
-  resize: Enableable & ResizeOptions;
+  quantizer: Enableable & QuantizeOptions
+  resize: Enableable & ResizeOptions
 }
 
 export const defaultPreprocessorState: PreprocessorState = {
@@ -20,4 +24,4 @@ export const defaultPreprocessorState: PreprocessorState = {
     enabled: false,
     ...resizeDefaultOptions,
   },
-};
+}

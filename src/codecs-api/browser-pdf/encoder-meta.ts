@@ -1,11 +1,16 @@
-import { canvasEncodeTest } from '../generic/util';
+import { canvasEncodeTest } from 'src/util/environment/canvas-encode-test'
 
-export interface EncodeOptions { }
-export interface EncoderState { type: typeof type; options: EncodeOptions; }
+// import { canvasEncodeTest } from '../generic/util';
 
-export const type = 'browser-pdf';
-export const label = 'Browser PDF';
-export const mimeType = 'application/pdf';
-export const extension = 'pdf';
-export const defaultOptions: EncodeOptions = {};
-export const featureTest = () => canvasEncodeTest(mimeType);
+export interface EncodeOptions {}
+export interface EncoderState {
+  type: typeof type
+  options: EncodeOptions
+}
+
+export const type = 'browser-pdf'
+export const label = 'Browser PDF'
+export const mimeType = 'application/pdf'
+export const extension = 'pdf'
+export const defaultOptions: EncodeOptions = {}
+export const featureTest = () => canvasEncodeTest(mimeType)

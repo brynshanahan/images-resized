@@ -12,6 +12,7 @@
   "dependencies": {
     "@babel/core": "^7.4.5",
     "@babel/plugin-proposal-decorators": "^7.4.4",
-    "comlink": "^4.0.1"
+    "comlink": "3.2.0",
+    "exports-loader": "^0.7.0"
   }
 }

@@ -1,69 +1,90 @@
-import { expose } from 'comlink';
+import { expose } from 'comlink'
 
 async function mozjpegEncode(
-  data: ImageData, options: import('../mozjpeg/encoder-meta').EncodeOptions,
+  data: ImageData,
+  options: import('../mozjpeg/encoder-meta').EncodeOptions
 ): Promise<ArrayBuffer> {
   const { encode } = await import(
     /* webpackChunkName: "process-mozjpeg-enc" */
-    '../mozjpeg/encoder');
-  return encode(data, options);
+    '../mozjpeg/encoder'
+  )
+  return encode(data, options)
 }
 
 async function quantize(
-  data: ImageData, opts: import('../imagequant/processor-meta').QuantizeOptions,
+  data: ImageData,
+  opts: import('../imagequant/processor-meta').QuantizeOptions
 ): Promise<ImageData> {
   const { process } = await import(
     /* webpackChunkName: "process-imagequant" */
-    '../imagequant/processor');
-  return process(data, opts);
+    '../imagequant/processor'
+  )
+  return process(data, opts)
 }
 
 async function rotate(
-  data: ImageData, opts: import('../rotate/processor-meta').RotateOptions,
+  data: ImageData,
+  opts: import('../rotate/processor-meta').RotateOptions
 ): Promise<ImageData> {
   const { rotate } = await import(
     /* webpackChunkName: "process-rotate" */
-    '../rotate/processor');
+    '../rotate/processor'
+  )
 
-  return rotate(data, opts);
+  return rotate(data, opts)
 }
 
 async function resize(
-  data: ImageData, opts: import('../resize/processor-meta').WorkerResizeOptions,
+  data: ImageData,
+  opts: import('../resize/processor-meta').WorkerResizeOptions
 ): Promise<ImageData> {
   const { resize } = await import(
     /* webpackChunkName: "process-resize" */
-    '../resize/processor');
+    '../resize/processor'
+  )
 
-  return resize(data, opts);
+  return resize(data, opts)
 }
 
 async function optiPngEncode(
-  data: BufferSource, options: import('../optipng/encoder-meta').EncodeOptions,
+  data: BufferSource,
+  options: import('../optipng/encoder-meta').EncodeOptions
 ): Promise<ArrayBuffer> {
   const { compress } = await import(
     /* webpackChunkName: "process-optipng" */
-    '../optipng/encoder');
-  return compress(data, options);
+    '../optipng/encoder'
+  )
+  return compress(data, options)
 }
 
 async function webpEncode(
-  data: ImageData, options: import('../webp/encoder-meta').EncodeOptions,
+  data: ImageData,
+  options: import('../webp/encoder-meta').EncodeOptions
 ): Promise<ArrayBuffer> {
   const { encode } = await import(
     /* webpackChunkName: "process-webp-enc" */
-    '../webp/encoder');
-  return encode(data, options);
+    '../webp/encoder'
+  )
+  return encode(data, options)
 }
 
 async function webpDecode(data: ArrayBuffer): Promise<ImageData> {
   const { decode } = await import(
     /* webpackChunkName: "process-webp-dec" */
-    '../webp/decoder');
-  return decode(data);
+    '../webp/decoder'
+  )
+  return decode(data)
 }
 
-const exports = { mozjpegEncode, quantize, rotate, resize, optiPngEncode, webpEncode, webpDecode };
-export type ProcessorWorkerApi = typeof exports;
+const exports = {
+  mozjpegEncode,
+  quantize,
+  rotate,
+  resize,
+  optiPngEncode,
+  webpEncode,
+  webpDecode,
+}
+export type ProcessorWorkerApi = typeof exports
 
-expose(exports, self);
+expose(exports, self)
