@@ -75,7 +75,7 @@ async function resizeImageData(
   processor: Processor
 ) {
   const config = { ...defaultOptions, ...options }
-  if (isWorkerResizeMethod(options)) {
+  if (isWorkerResizeMethod(config)) {
     return await processor.workerResize(imageData, config)
   } else {
     return processor.resize(imageData, config as BrowserResizeOptions)

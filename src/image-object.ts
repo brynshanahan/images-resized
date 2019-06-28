@@ -1,5 +1,5 @@
 import { Fileish } from 'squoosh/src/lib/initial-util'
-import { ResizeOptions } from './resize'
+import { ResizeOptions, resizeImageData } from './resize'
 import { FileContainer } from './file-container'
 import { sniffMimeType } from './util/files/sniff-mime-type'
 import Processor from './codecs-api/processor'
@@ -16,6 +16,7 @@ import compressImageData from './compress'
 import { EncoderType, encoderMap, EncoderOptions } from './codecs-api/encoders'
 import Subject from './util/reactive/subject'
 import maintainAspectRatio from './util/image/maintain-aspect-ratio'
+import { encode } from './codecs-api/codecs/browser-png/encoder'
 
 const defaultImageObjectSizes: { [k: string]: ImageSize } = {
   large: {
@@ -185,6 +186,16 @@ export class ImageObject extends Subject {
     return Object.values(this.data.pkg)
   }
 
+  async getImageForSize(
+    size: { width: number } | number,
+    callback: (url: string) => any
+  ) {
+    if (typeof size === 'number') {
+      const files = this.allFiles()
+      const index = files.findIndex(el)
+    }
+  }
+
   getSize(name: string) {
     return this.data.pkg[name]
   }
@@ -198,57 +209,50 @@ export class ImageObject extends Subject {
       ([sizeName]) => !this.hasSize(sizeName)
     )
 
-    const processors = entries.map((entry, i) => {
-      if (i === 0) {
-        return getProcessor()
-      } else {
-        return new Processor()
-      }
-    })
-
     /* Fetches image data */
-    await this.getImageData(this.isVector, processors[0])
+    await this.getImageData(this.isVector, getProcessor())
 
-    return Promise.all(
-      entries.map(async ([sizeName, size], i) => {
-        const hasSize = this.hasSize(sizeName)
-        let result
+    const results: Promise<ImageInfo>[] = []
 
-        console.log(`Generating image for ${sizeName}`, true)
+    for (const i in entries) {
+      const [sizeName, size] = entries[i]
+      const hasSize = this.hasSize(sizeName)
+      let result
 
-        if (hasSize) {
-          result = await this.getSize(sizeName)
-        } else {
-          result = await this.createSize(size, processors[i])
-        }
+      console.log(`Generating image for ${sizeName}`, true)
 
-        console.log(`${sizeName} image complete`)
+      if (hasSize) {
+        result = Promise.resolve(this.getSize(sizeName))
+      } else {
+        result = this.createSize(size, new Processor())
+      }
 
-        return result
-      })
-    )
+      results.push(result)
+    }
+
+    return Promise.all(results)
   }
 
   async getImageData(isVector: boolean, processor: Processor) {
-    if (this.imageData) {
-      console.log('Using cached image data')
-      return this.imageData
-    } else {
-      console.log('Getting image data', true)
-      this.imageData = isVector
-        ? await svgImgToImageData(this.file)
-        : await decodeImage(this.file, processor)
+    // if (this.imageData) {
+    //   console.log('Using cached image data', this.imageData)
+    //   return this.imageData
+    // } else {
+    console.log('Getting image data', true)
+    this.imageData = isVector
+      ? await svgImgToImageData(this.file)
+      : await decodeImage(this.file, processor)
 
-      console.log('Rotating')
-      if (this.data.rotationFromOriginal) {
-        this.imageData = await rotate(this.imageData, {
-          rotate: this.data.rotationFromOriginal,
-        })
-      }
-      console.log('Finished rotating')
-
-      return this.imageData
+    console.log('Rotating')
+    if (this.data.rotationFromOriginal) {
+      this.imageData = await rotate(this.imageData, {
+        rotate: this.data.rotationFromOriginal,
+      })
     }
+    console.log('Finished rotating')
+
+    return this.imageData
+    // }
   }
 
   async createSize(imageSize: ImageSize, argProcessor?: Processor) {
@@ -273,13 +277,16 @@ export class ImageObject extends Subject {
       let opts = {
         ...defaultResizeOptions,
         ...imageSize.size,
+        // premultiply: false,
+        linearRGB: false,
+        // method: "lanczos3"
       } as WorkerResizeOptions
 
       if (opts.fit === 'contain') {
         opts = maintainAspectRatio(result, opts) as WorkerResizeOptions
       }
 
-      result = await processor.workerResize(result, opts)
+      result = await resizeImageData(result, opts, processor)
     }
 
     console.log(`Quantizing ${imageSize.name} image`)
@@ -295,6 +302,12 @@ export class ImageObject extends Subject {
       `${imageSize.name}@${this.data.original.name}`,
       processor
     )
+
+    // const finalImageData = result
+    // const finalFile = await encode(result)
+
+    // console.log(finalFile)
+
     const finalImageData = await decodeImage(finalFile, processor)
 
     const fileContainer: FileContainer = {
@@ -319,7 +332,7 @@ export class ImageObject extends Subject {
 
     this.emit('update')
 
-    return fileContainer
+    return this.data.pkg[imageSize.name]
   }
 
   destroy() {

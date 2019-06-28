@@ -1,28 +1,28 @@
 import { proxy } from 'comlink'
 import { QuantizeOptions } from './imagequant/processor-meta'
 // import { canvasEncode, blobToArrayBuffer } from '../lib/util'
-import { EncodeOptions as MozJPEGEncoderOptions } from './mozjpeg/encoder-meta'
+import { EncodeOptions as MozJPEGEncoderOptions } from './codecs/mozjpeg/encoder-meta'
 import { EncodeOptions as OptiPNGEncoderOptions } from './optipng/encoder-meta'
 import { EncodeOptions as WebPEncoderOptions } from './webp/encoder-meta'
-import { EncodeOptions as BrowserJPEGOptions } from './browser-jpeg/encoder-meta'
-import { EncodeOptions as BrowserWebpEncodeOptions } from './browser-webp/encoder-meta'
+import { EncodeOptions as BrowserJPEGOptions } from './codecs/browser-jpeg/encoder-meta'
+import { EncodeOptions as BrowserWebpEncodeOptions } from './codecs/browser-webp/encoder-meta'
 import {
   BrowserResizeOptions,
   VectorResizeOptions,
 } from './resize/processor-meta'
 import { browserResize, vectorResize } from './resize/processor-sync'
-import * as browserBMP from './browser-bmp/encoder'
-import * as browserPNG from './browser-png/encoder'
-import * as browserJPEG from './browser-jpeg/encoder'
-import * as browserWebP from './browser-webp/encoder'
-import * as browserGIF from './browser-gif/encoder'
-import * as browserTIFF from './browser-tiff/encoder'
-import * as browserJP2 from './browser-jp2/encoder'
-import * as browserPDF from './browser-pdf/encoder'
+import * as browserBMP from './codecs/browser-bmp/encoder'
+import * as browserPNG from './codecs/browser-png/encoder'
+import * as browserJPEG from './codecs/browser-jpeg/encoder'
+import * as browserWebP from './codecs/browser-webp/encoder'
+import * as browserGIF from './codecs/browser-gif/encoder'
+import * as browserTIFF from './codecs/browser-tiff/encoder'
+import * as browserJP2 from './codecs/browser-jp2/encoder'
+import * as browserPDF from './codecs/browser-pdf/encoder'
 import { canvasEncode } from 'src/util/canvas/canvas-encode'
 import { blobToArrayBuffer } from 'src/util/files/blob'
 
-type ProcessorWorkerApi = import('./processor-worker').ProcessorWorkerApi
+type ProcessorWorkerApi = import('./image-worker/image-worker').ProcessorWorkerApi
 
 /** How long the worker should be idle before terminating. */
 const workerTimeout = 10000
@@ -55,7 +55,7 @@ export default class Processor {
       if (needsWorker) self.clearTimeout(this.workerTimeoutId)
 
       if (!this.worker && needsWorker) {
-        this.worker = new Worker('./processor-worker', {
+        this.worker = new Worker('./image-worker/image-worker', {
           name: 'process-worker',
           type: 'module',
         }) as Worker
@@ -71,6 +71,7 @@ export default class Processor {
         }),
       ])
 
+      /* We dont care about the error */
       await finalResult.catch(() => {})
 
       if (this.latestJobId === jobId) {
@@ -113,14 +114,14 @@ export default class Processor {
 
   // Off main thread jobs:
   imageQuant(data: ImageData, opts: QuantizeOptions): Promise<ImageData> {
-    return this.workerJob(() => this.workerApi.quantize(data, opts))
+    return this.workerJob(() => this.workerApi.processors.quantize(data, opts))
   }
 
   rotate(
     data: ImageData,
     opts: import('./rotate/processor-meta').RotateOptions
   ): Promise<ImageData> {
-    return this.workerJob(() => this.workerApi.rotate(data, opts))
+    return this.workerJob(() => this.workerApi.processors.rotate(data, opts))
   }
 
   workerResize(
@@ -128,7 +129,7 @@ export default class Processor {
     opts: import('./resize/processor-meta').WorkerResizeOptions
   ): Promise<ImageData> {
     return this.workerJob(() => {
-      return this.workerApi.resize(data, opts)
+      return this.workerApi.processors.resize(data, opts)
     })
   }
 
@@ -136,7 +137,7 @@ export default class Processor {
     data: ImageData,
     opts: MozJPEGEncoderOptions
   ): Promise<ArrayBuffer> {
-    return this.workerJob(() => this.workerApi.mozjpegEncode(data, opts))
+    return this.workerJob(() => this.workerApi.encoders.mozjpegEncode(data, opts))
   }
 
   optiPngEncode(
@@ -147,23 +148,22 @@ export default class Processor {
       // OptiPNG expects PNG input.
       const pngBlob = await canvasEncode(data, 'image/png')
       const pngBuffer = await blobToArrayBuffer(pngBlob)
-      return this.workerApi.optiPngEncode(pngBuffer, opts)
+      return this.workerApi.encoders.optiPngEncode(pngBuffer, opts)
     })
   }
 
   webpEncode(data: ImageData, opts: WebPEncoderOptions): Promise<ArrayBuffer> {
-    return this.workerJob(() => this.workerApi.webpEncode(data, opts))
+    return this.workerJob(() => this.workerApi.encoders.webpEncode(data, opts))
   }
 
   webpDecode(blob: Blob): Promise<ImageData> {
     return this.workerJob(async () => {
       const data = await blobToArrayBuffer(blob)
-      return this.workerApi.webpDecode(data)
+      return this.workerApi.decoders.webpDecode(data)
     })
   }
 
   // Not-worker jobs:
-
   browserBmpEncode(data: ImageData): Promise<Blob> {
     return this.job(() => browserBMP.encode(data))
   }
@@ -200,7 +200,6 @@ export default class Processor {
   }
 
   // Synchronous jobs
-
   resize(data: ImageData, opts: BrowserResizeOptions) {
     this.abortCurrent()
     return browserResize(data, opts)
