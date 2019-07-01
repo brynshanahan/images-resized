@@ -1,6 +1,5 @@
 import { EncoderState, encoderMap } from './codecs-api/encoders'
 import Processor from './processor'
-import { Fileish } from 'squoosh/src/lib/initial-util'
 import {
   optipngMeta,
   mozjpegMeta,
@@ -14,6 +13,7 @@ import {
   browserbmpMeta,
   browserpdfMeta
 } from './codecs-api/codecs/codecs'
+import { Fileish } from './util/files/fileish'
 
 async function compressImageData(
   image: ImageData,
@@ -30,7 +30,7 @@ async function compressImageData(
 
   return new Fileish(
     [compressedData],
-    sourceFilename.replace(/.[^.]*$/, `.${encoder.extension}`),
+    sourceFilename.replace(/.[^.]*$/, `.${encoder.extensions[0]}`),
     { type: encoder.mimeType }
   )
 }

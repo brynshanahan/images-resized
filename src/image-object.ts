@@ -13,10 +13,10 @@ import { defaultResizeOptions } from './codecs-api/processors/resize/processor-m
 import { WorkerResizeOptions } from './resize'
 import quantizeImageData, { defaultQuantizeOptions } from './quantize'
 import compressImageData from './compress'
-import getEncodeMeta from './codecs-api/encoders'
 import Subject from './util/reactive/subject'
 import maintainAspectRatio from './util/image/maintain-aspect-ratio'
 import { encode } from './codecs-api/codecs/browser-png/encoder'
+import getEncodeMeta from './codecs-api/encoders'
 
 export interface SingleImageContainer {
   width: number
@@ -29,7 +29,7 @@ export interface SingleImageContainer {
   name: string
 }
 
-interface SingleImageSize {
+export interface SingleImageSize {
   name: string
   size: {
     width: number
@@ -52,7 +52,11 @@ interface ImageInfoContainer {
 }
 
 const processors = {
-  load: new Processor()
+  load: new Processor(),
+  compress: new Processor(),
+  quantize: new Processor(),
+  resize: new Processor(),
+  decode: new Processor()
 }
 
 const defaultImageContainerOpts: ImageInfoContainer = {
@@ -107,6 +111,9 @@ export class ImageContainer extends Subject {
 
     this.files = {}
 
+    /* Data has to be json friendly */
+    this.data = data
+
     /* 
     _file should never be passed from third party code. 
     ImageContainers should be made with ImageContainer.createFromFile(file) 
@@ -128,9 +135,6 @@ export class ImageContainer extends Subject {
       this.data.original = original
       this.data.pkg.original = original
     }
-
-    /* Data will be serialized to the db */
-    this.data = data
 
     /* Will control loading */
     this.originalHasInitialized = this.originalIsInitialized()
@@ -261,16 +265,24 @@ export class ImageContainer extends Subject {
     // }
   }
 
+  addSizes(sizes: { [k: string]: SingleImageSize }) {
+    this.data.sizes = {
+      ...this.data.sizes,
+      ...sizes
+    }
+  }
+
   async createSize(imageSize: SingleImageSize, argProcessor?: Processor) {
+    console.log('Creating', imageSize)
+
     // Special-case SVG. We need to avoid createImageBitmap because of
     // https://bugs.chromium.org/p/chromium/issues/detail?id=606319.
     // Also, we cache the HTMLImageElement so we can perform vector resizing later.
-    const processor = argProcessor || getProcessor()
     const isVector = this.isVector
 
     /* Create or get intialImageData */
     console.log('Getting image data')
-    let result = await this.getImageData(isVector, processor)
+    let result = await this.getImageData(isVector, processors.load)
 
     const shouldResize = imageSize.name !== 'original'
 
@@ -292,14 +304,18 @@ export class ImageContainer extends Subject {
         opts = maintainAspectRatio(result, opts) as WorkerResizeOptions
       }
 
-      result = await resizeImageData(result, opts, processor)
+      result = await resizeImageData(result, opts, processors.resize)
     }
 
     console.log(`Quantizing ${imageSize.name} image`)
     const quantizerOptions = {
       ...defaultQuantizeOptions
     }
-    result = await quantizeImageData(result, quantizerOptions, processor)
+    result = await quantizeImageData(
+      result,
+      quantizerOptions,
+      processors.quantize
+    )
 
     const mozjpeg = getEncodeMeta('mozjpeg')
     const finalFile = await compressImageData(
@@ -307,7 +323,7 @@ export class ImageContainer extends Subject {
       mozjpeg.type,
       mozjpeg.defaultOptions,
       `${imageSize.name}@${this.data.original.name}`,
-      processor
+      processors.compress
     )
 
     // const finalImageData = result
@@ -315,7 +331,7 @@ export class ImageContainer extends Subject {
 
     // console.log(finalFile)
 
-    const finalImageData = await decodeImage(finalFile, processor)
+    const finalImageData = await decodeImage(finalFile, processors.decode)
 
     const fileContainer: FileContainer = {
       blob: finalFile,
@@ -324,7 +340,7 @@ export class ImageContainer extends Subject {
       height: finalImageData.height
     }
 
-    this.originalFiles[imageSize.name] = fileContainer
+    this.files[imageSize.name] = fileContainer
 
     this.data.pkg[imageSize.name] = {
       sizeName: imageSize.name,

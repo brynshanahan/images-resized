@@ -1,13 +1,16 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { ImageContainer, SingleImageContainer } from '../image-object'
-import { FileContainer } from '../file-container'
+import {
+  ImageContainer,
+  SingleImageContainer,
+  SingleImageSize
+} from '../image-object'
 import { humanFileSize } from './util/human-file-size'
 import { getExampleImage } from './util/get-example-image'
-import { RotateOptions } from 'src/codecs-api/rotate/processor-meta'
+import { RotateOptions } from 'src/codecs-api/processors/rotate/processor-meta'
 import './styles/screen.scss'
 import { timeToReadable } from './util/time-to-readable'
-import { Fileish } from 'squoosh/src/lib/initial-util'
+import { Fileish } from 'src/util/files/fileish'
 
 interface State {
   files: SingleImageContainer[]
@@ -16,39 +19,39 @@ interface State {
   imageInitialised: boolean
 }
 
-const defaultImageObjectSizes: { [k: string]: SingleSize } = {
+const defaultImageObjectSizes: { [k: string]: SingleImageSize } = {
   large: {
     name: 'large',
     size: {
       width: 1920,
       height: 1080,
-      fit: 'contain',
-    },
+      fit: 'contain'
+    }
   },
   medium: {
     name: 'medium',
     size: {
       width: 720,
       height: 480,
-      fit: 'contain',
-    },
+      fit: 'contain'
+    }
   },
   small: {
     name: 'small',
     size: {
       width: 480,
       height: 360,
-      fit: 'contain',
-    },
+      fit: 'contain'
+    }
   },
   tiny: {
     name: 'tiny',
     size: {
       width: 64,
       height: 64,
-      fit: 'contain',
-    },
-  },
+      fit: 'contain'
+    }
+  }
 }
 
 const ImageGroup = ({ src, name, width, height, size }: any) => {
@@ -70,7 +73,7 @@ class App extends React.Component {
     files: [],
     time: 0,
     rotation: 0,
-    imageInitialised: false,
+    imageInitialised: false
   }
   onImageUpdate?: () => any
   interval: number
@@ -82,9 +85,8 @@ class App extends React.Component {
   async updateImageObject(imageFile: File | Fileish) {
     this.setState({ imageInitialised: false })
     /* Create image object from file */
-    const imageObject = new ImageContainer(imageFile, imageFile.name, {
-      rotation: this.state.rotation,
-    })
+    const imageObject = ImageContainer.createFromFile(imageFile)
+    imageObject.addSizes(defaultImageObjectSizes)
 
     /* Save to this */
     this.imageObject = imageObject
@@ -92,7 +94,7 @@ class App extends React.Component {
     /* When the imageObject creates a new file it will emit an update event */
     this.onImageUpdate = imageObject.on('update', () => {
       this.setState({
-        files: imageObject.allFiles().sort((a, b) => a.width - b.width),
+        files: imageObject.allFiles().sort((a, b) => a.width - b.width)
       })
     })
 
@@ -109,7 +111,7 @@ class App extends React.Component {
     this.onImageUpdate && this.onImageUpdate()
   }
   processFiles = async () => {
-    const createdSizesPromise = this.imageObject.createAllSizes()
+    const createdSizesPromise = this.imageObject.createMissingSizes()
     const startTime = Date.now()
     this.interval = setInterval(() => {
       this.setState({ time: Date.now() - startTime })
@@ -158,7 +160,7 @@ class App extends React.Component {
               fileSize,
               sizeName,
               width,
-              height,
+              height
             }: SingleImageContainer) => (
               <ImageGroup
                 src={url}

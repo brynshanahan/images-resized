@@ -3,7 +3,7 @@ import EncoderMeta from '../encoder-meta-interface'
 export enum MozJpegColorSpace {
   GRAYSCALE = 1,
   RGB,
-  YCbCr,
+  YCbCr
 }
 
 export interface EncodeOptions {
@@ -33,23 +33,24 @@ export const mozjpegMeta: EncoderMeta<EncodeOptions> = {
   optDescription: {
     quality:
       'Overall quality of an image, lower quality results in a smaller file size',
+    arithmetic: 'A new way of encoding jpeg that is not very widely supported.'
   },
   defaultOptions: {
-    quality: 60,
+    quality: 75,
     baseline: false,
     arithmetic: false,
     progressive: true,
     optimize_coding: true,
-    smoothing: 0,
+    smoothing: 1,
     color_space: MozJpegColorSpace.YCbCr,
     quant_table: 3,
-    trellis_multipass: false,
-    trellis_opt_zero: false,
-    trellis_opt_table: false,
+    trellis_multipass: true,
+    trellis_opt_zero: true,
+    trellis_opt_table: true,
     trellis_loops: 1,
     auto_subsample: true,
     chroma_subsample: 2,
-    separate_chroma_quality: false,
-    chroma_quality: 75,
-  },
+    separate_chroma_quality: true,
+    chroma_quality: 75
+  }
 }
