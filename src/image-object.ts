@@ -18,42 +18,7 @@ import Subject from './util/reactive/subject'
 import maintainAspectRatio from './util/image/maintain-aspect-ratio'
 import { encode } from './codecs-api/codecs/browser-png/encoder'
 
-const defaultImageObjectSizes: { [k: string]: ImageSize } = {
-  large: {
-    name: 'large',
-    size: {
-      width: 1920,
-      height: 1080,
-      fit: 'contain',
-    },
-  },
-  medium: {
-    name: 'medium',
-    size: {
-      width: 720,
-      height: 480,
-      fit: 'contain',
-    },
-  },
-  small: {
-    name: 'small',
-    size: {
-      width: 480,
-      height: 360,
-      fit: 'contain',
-    },
-  },
-  tiny: {
-    name: 'tiny',
-    size: {
-      width: 64,
-      height: 64,
-      fit: 'contain',
-    },
-  },
-}
-
-export interface ImageInfo {
+export interface SingleImageContainer {
   width: number
   height: number
   sizeName: string
@@ -64,7 +29,7 @@ export interface ImageInfo {
   name: string
 }
 
-interface ImageSize {
+interface SingleImageSize {
   name: string
   size: {
     width: number
@@ -73,109 +38,147 @@ interface ImageSize {
   }
 }
 
-export interface ImageObjectOptions {
-  rotation: RotateOptions['rotate']
+interface ImageInfoContainer {
+  rotationFromOriginal: RotateOptions['rotate']
+  sizes: {
+    [k: string]: SingleImageSize
+  }
+  margin: number // The amount of room left between generated images as a decimal percentage
+  original?: Partial<SingleImageContainer>
+  isVector?: boolean
+  pkg: {
+    [k: string]: SingleImageContainer
+  }
 }
 
-const defaultImageObjectOptions: ImageObjectOptions = {
-  rotation: 0,
+const processors = {
+  load: new Processor(),
 }
 
-let processor: false | Processor = false
-
-const getProcessor = (): Processor => {
-  if (!processor) {
-    processor = new Processor()
-  }
-  return processor
+const defaultImageContainerOpts: ImageInfoContainer = {
+  rotationFromOriginal: 0,
+  pkg: {},
+  sizes: {},
+  margin: 0.2,
 }
 
-export class ImageObject extends Subject {
-  file: File | Fileish
-  files: {
-    [k: string]: FileContainer
-  }
-  data: {
-    rotationFromOriginal: RotateOptions['rotate']
-    sizes: {
-      [k: string]: ImageSize
-    }
-    original: ImageInfo
-    pkg: {
-      [k: string]: ImageInfo
-    }
-  }
+export class ImageContainer extends Subject {
+  originalFile: File | Fileish
+  files: { [k: string]: FileContainer }
+  data: ImageInfoContainer
+
+  /* imageData is created and cached on the object */
   imageData?: ImageData
-  queue: []
-  imgIsLoading: boolean
-  imgHasLoaded: boolean
-  isVector: boolean
-  mimeType?: Promise<string> | string
 
-  constructor(
-    file: Fileish | File,
-    name: string = 'unknown',
-    optionsArg: Partial<ImageObjectOptions> = {}
-  ) {
+  /* Used to stop two quick init calls */
+  initializing: boolean
+
+  /* When doing processing we will always have to download the original first */
+  originalHasInitialized: boolean
+  isVector: boolean
+
+  /* 
+  There is no method for getting an image from a url, 
+  but it can be implemented in userland by useing fetch.blob() 
+  */
+  static createFromFile(blob: File | Fileish, name: string = '') {
+    if (!name && !blob.name) {
+      console.warn(
+        'No file name given to `ImageContainer.createFromFile(file:File|Blob, name:string)`'
+      )
+    }
+
+    const file = new Fileish([blob], name || blob.name || `unknown`, {
+      type: blob.type,
+    })
+
+    return new ImageContainer(
+      clone(defaultImageContainerOpts, {
+        original: {
+          name: name || blob.name || `unknown`,
+        },
+      }),
+      file
+    )
+  }
+
+  constructor(data: ImageInfoContainer, private _file?: File | Fileish) {
     super()
 
-    const options: ImageObjectOptions = {
-      ...defaultImageObjectOptions,
-      ...optionsArg,
-    }
-
-    this.file = file
     this.files = {}
 
-    this.isVector = this.file.type.startsWith('image/svg+xml')
+    /* 
+    _file should never be passed from third party code. 
+    ImageContainers should be made with ImageContainer.createFromFile(file) 
+    */
+    if (_file) {
+      this.originalFile = _file
 
-    const original: ImageInfo = {
-      width: 0,
-      height: 0,
-      url: '',
-      fit: 'contain',
-      sizeName: 'original',
-      fileSize: file.size,
-      type: this.file.type,
-      name: this.file.name || name,
+      const original: SingleImageContainer = {
+        width: 0,
+        height: 0,
+        url: '',
+        fit: 'contain',
+        sizeName: 'original',
+        fileSize: this.originalFile.size,
+        type: this.originalFile.type,
+        name: this.originalFile.name || name,
+      }
+
+      this.data.original = original
+      this.data.pkg.original = original
     }
 
     /* Data will be serialized to the db */
-    this.data = {
-      /* Declare what sizes you want to exist */
-      sizes: defaultImageObjectSizes,
-      rotationFromOriginal: options.rotation,
-      original,
-      pkg: {
-        original,
-      },
-    }
+    this.data = data
 
-    this.imgHasLoaded = this.hasLoaded()
+    /* Will control loading */
+    this.originalHasInitialized = this.originalIsInitialized()
   }
 
   /* 
   Checks if we need to load the image into the dom
   (To figure out it's natural sizing) 
   */
-  hasLoaded() {
-    return Boolean(this.data.original.width && this.data.original.height)
+  originalIsInitialized() {
+    return Boolean(
+      this.data.original &&
+        this.data.original.width &&
+        this.data.original.height
+    )
   }
 
+  async getOriginalAsFile() {
+    if (this.originalFile) {
+      this.originalFile
+    } else {
+      this.originalFile = await fileFromUrl(this.data.original.url, this.data.original.name)
+    }
+
+    this.isVector = this.originalFile.type.startsWith('image/svg+xml')
+    return this.originalFile
+  }
+
+  /* Shouldn't really need to load this on the front end */
   async initialLoad() {
-    this.imgIsLoading = true
+    if (this.originalHasInitialized) return
 
-    const { width, height } = await decodeImage(this.file, getProcessor())
+    await this.getOriginalAsFile()
 
-    /* Wait for the image to load to get the natural dimensions */
+    this.initializing = true
+
+    const { width, height } = await decodeImage(
+      this.originalFile,
+      new Processor()
+    )
 
     /* Save image infomation to data */
     this.data.original.width = width
     this.data.original.height = height
-    this.data.original.url = URL.createObjectURL(this.file)
+    this.data.original.url = URL.createObjectURL(this.originalFile)
 
-    this.imgHasLoaded = true
-    this.imgIsLoading = false
+    this.originalHasInitialized = true
+    this.initializing = false
 
     this.emit('update')
 
@@ -204,15 +207,15 @@ export class ImageObject extends Subject {
     return !!this.getSize(name)
   }
 
-  async createAllSizes() {
+  async createMissingSizes() {
     const entries = Object.entries(this.data.sizes).filter(
       ([sizeName]) => !this.hasSize(sizeName)
     )
 
     /* Fetches image data */
-    await this.getImageData(this.isVector, getProcessor())
+    await this.getImageData(this.isVector, processors.load)
 
-    const results: Promise<ImageInfo>[] = []
+    const results: Promise<SingleImageContainer>[] = []
 
     for (const i in entries) {
       const [sizeName, size] = entries[i]
@@ -240,8 +243,8 @@ export class ImageObject extends Subject {
     // } else {
     console.log('Getting image data', true)
     this.imageData = isVector
-      ? await svgImgToImageData(this.file)
-      : await decodeImage(this.file, processor)
+      ? await svgImgToImageData(this.originalFile)
+      : await decodeImage(this.originalFile, processor)
 
     console.log('Rotating')
     if (this.data.rotationFromOriginal) {
@@ -255,7 +258,7 @@ export class ImageObject extends Subject {
     // }
   }
 
-  async createSize(imageSize: ImageSize, argProcessor?: Processor) {
+  async createSize(imageSize: SingleImageSize, argProcessor?: Processor) {
     // Special-case SVG. We need to avoid createImageBitmap because of
     // https://bugs.chromium.org/p/chromium/issues/detail?id=606319.
     // Also, we cache the HTMLImageElement so we can perform vector resizing later.
@@ -318,7 +321,7 @@ export class ImageObject extends Subject {
       height: finalImageData.height,
     }
 
-    this.files[imageSize.name] = fileContainer
+    this.originalFiles[imageSize.name] = fileContainer
 
     this.data.pkg[imageSize.name] = {
       sizeName: imageSize.name,
@@ -339,4 +342,18 @@ export class ImageObject extends Subject {
   destroy() {
     URL.revokeObjectURL(this.data.original.url)
   }
+}
+
+function fileFromUrl(url: string, name?: string) {
+  return fetch(url)
+    .then(response => response.blob())
+    .then(blob => {
+      return new Fileish([blob], name || url.split('/').pop(), {
+        type: blob.type,
+      })
+    })
+}
+
+function clone(...args: { [k: string]: any }[]) {
+  return Object.assign({}, ...args)
 }

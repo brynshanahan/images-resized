@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { ImageObject, ImageInfo } from '../image-object'
+import { ImageContainer, SingleImageContainer } from '../image-object'
 import { FileContainer } from '../file-container'
 import { humanFileSize } from './util/human-file-size'
 import { getExampleImage } from './util/get-example-image'
@@ -10,10 +10,45 @@ import { timeToReadable } from './util/time-to-readable'
 import { Fileish } from 'squoosh/src/lib/initial-util'
 
 interface State {
-  files: ImageInfo[]
+  files: SingleImageContainer[]
   time: number
   rotation: RotateOptions['rotate']
   imageInitialised: boolean
+}
+
+const defaultImageObjectSizes: { [k: string]: SingleSize } = {
+  large: {
+    name: 'large',
+    size: {
+      width: 1920,
+      height: 1080,
+      fit: 'contain',
+    },
+  },
+  medium: {
+    name: 'medium',
+    size: {
+      width: 720,
+      height: 480,
+      fit: 'contain',
+    },
+  },
+  small: {
+    name: 'small',
+    size: {
+      width: 480,
+      height: 360,
+      fit: 'contain',
+    },
+  },
+  tiny: {
+    name: 'tiny',
+    size: {
+      width: 64,
+      height: 64,
+      fit: 'contain',
+    },
+  },
 }
 
 const ImageGroup = ({ src, name, width, height, size }: any) => {
@@ -39,7 +74,7 @@ class App extends React.Component {
   }
   onImageUpdate?: () => any
   interval: number
-  imageObject?: ImageObject
+  imageObject?: ImageContainer
   async componentDidMount() {
     /* Get the image from a fetch.blob or file input */
     this.updateImageObject(await getExampleImage())
@@ -47,7 +82,7 @@ class App extends React.Component {
   async updateImageObject(imageFile: File | Fileish) {
     this.setState({ imageInitialised: false })
     /* Create image object from file */
-    const imageObject = new ImageObject(imageFile, imageFile.name, {
+    const imageObject = new ImageContainer(imageFile, imageFile.name, {
       rotation: this.state.rotation,
     })
 
@@ -117,16 +152,24 @@ class App extends React.Component {
           )}
         </div>
         <div className="images">
-          {rest.map(({ url, fileSize, sizeName, width, height }: ImageInfo) => (
-            <ImageGroup
-              src={url}
-              size={fileSize}
-              name={sizeName}
-              width={width}
-              height={height}
-              key={sizeName}
-            />
-          ))}
+          {rest.map(
+            ({
+              url,
+              fileSize,
+              sizeName,
+              width,
+              height,
+            }: SingleImageContainer) => (
+              <ImageGroup
+                src={url}
+                size={fileSize}
+                name={sizeName}
+                width={width}
+                height={height}
+                key={sizeName}
+              />
+            )
+          )}
         </div>
       </div>
     )
