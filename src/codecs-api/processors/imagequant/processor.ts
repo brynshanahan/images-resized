@@ -3,7 +3,7 @@ import imagequant, {
 } from 'squoosh/codecs/imagequant/imagequant'
 import wasmUrl from 'squoosh/codecs/imagequant/imagequant.wasm'
 import { QuantizeOptions } from './processor-meta'
-import { initEmscriptenModule } from '../util'
+import { initEmscriptenModule } from '../../util'
 
 let emscriptenModule: Promise<QuantizerModule>
 

@@ -1,16 +1,16 @@
 import { canvasEncodeTest } from 'src/util/environment/canvas-encode-test'
-
-// import { canvasEncodeTest } from '../generic/util';
+import EncoderMeta from '../encoder-meta-interface'
 
 export interface EncodeOptions {}
-export interface EncoderState {
-  type: typeof type
-  options: EncodeOptions
-}
 
-export const type = 'browser-tiff'
-export const label = 'Browser TIFF'
-export const mimeType = 'image/tiff'
-export const extension = 'tiff'
-export const defaultOptions: EncodeOptions = {}
-export const featureTest = () => canvasEncodeTest(mimeType)
+export const browsertiffMeta: EncoderMeta<EncodeOptions> = {
+  type: 'browser-tiff',
+  label: 'Browser TIFF',
+  mimeType: 'image/tiff',
+  extensions: ['tiff'],
+  optDescription: {},
+  defaultOptions: {},
+  featureTest() {
+    return canvasEncodeTest(this.mimeType)
+  },
+}

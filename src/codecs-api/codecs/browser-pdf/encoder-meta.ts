@@ -1,16 +1,16 @@
 import { canvasEncodeTest } from 'src/util/environment/canvas-encode-test'
-
-// import { canvasEncodeTest } from '../generic/util';
+import EncoderMeta from '../encoder-meta-interface'
 
 export interface EncodeOptions {}
-export interface EncoderState {
-  type: typeof type
-  options: EncodeOptions
-}
 
-export const type = 'browser-pdf'
-export const label = 'Browser PDF'
-export const mimeType = 'application/pdf'
-export const extension = 'pdf'
-export const defaultOptions: EncodeOptions = {}
-export const featureTest = () => canvasEncodeTest(mimeType)
+export const browserpdfMeta: EncoderMeta<EncodeOptions> = {
+  type: 'browser-pdf',
+  label: 'Browser PDF',
+  mimeType: 'application/pdf',
+  extensions: ['pdf'],
+  optDescription: {},
+  defaultOptions: {},
+  featureTest() {
+    return canvasEncodeTest(this.mimeType)
+  },
+}

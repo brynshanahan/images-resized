@@ -6,14 +6,14 @@ import Processor from './codecs-api/processor'
 import svgBlobToImg, { svgImgToImageData } from './svg-to-image'
 import { drawableToImageData } from './util/image/drawable-to-image-data'
 import { decodeImage } from './codecs-api/decoders'
-import { rotate } from './codecs-api/rotate/processor'
-import { RotateOptions } from './codecs-api/rotate/processor-meta'
-import { resize } from './codecs-api/resize/processor'
-import { defaultResizeOptions } from './codecs-api/resize/processor-meta'
+import { rotate } from './codecs-api/processors/rotate/processor'
+import { RotateOptions } from './codecs-api/processors/rotate/processor-meta'
+import { resize } from './codecs-api/processors/resize/processor'
+import { defaultResizeOptions } from './codecs-api/processors/resize/processor-meta'
 import { WorkerResizeOptions } from './resize'
 import quantizeImageData, { defaultQuantizeOptions } from './quantize'
 import compressImageData from './compress'
-import { EncoderType, encoderMap, EncoderOptions } from './codecs-api/encoders'
+import getEncodeMeta from './codecs-api/encoders'
 import Subject from './util/reactive/subject'
 import maintainAspectRatio from './util/image/maintain-aspect-ratio'
 import { encode } from './codecs-api/codecs/browser-png/encoder'
@@ -295,10 +295,11 @@ export class ImageObject extends Subject {
     }
     result = await quantizeImageData(result, quantizerOptions, processor)
 
-    const compressOptions = getEncodeOptions('mozjpeg')
+    const mozjpeg = getEncodeMeta('mozjpeg')
     const finalFile = await compressImageData(
       result,
-      compressOptions,
+      mozjpeg.type,
+      mozjpeg.defaultOptions,
       `${imageSize.name}@${this.data.original.name}`,
       processor
     )
@@ -337,17 +338,5 @@ export class ImageObject extends Subject {
 
   destroy() {
     URL.revokeObjectURL(this.data.original.url)
-  }
-}
-
-function getEncodeOptions(
-  type: EncoderType
-): {
-  type: EncoderType
-  options: EncoderOptions
-} {
-  return {
-    type,
-    options: encoderMap[type].defaultOptions,
   }
 }

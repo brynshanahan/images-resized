@@ -1,6 +1,6 @@
-import { mimeType } from './encoder-meta'
+import { browserpngMeta } from './encoder-meta'
 import { canvasEncode } from 'src/util/canvas/canvas-encode'
 
 export function encode(data: ImageData) {
-  return canvasEncode(data, mimeType)
+  return canvasEncode(data, browserpngMeta.mimeType)
 }

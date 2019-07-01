@@ -1,16 +1,18 @@
 import { canvasEncodeTest } from 'src/util/environment/canvas-encode-test'
+import EncoderMeta from '../encoder-meta-interface'
 
 // import { canvasEncodeTest } from '../generic/util';
 
 export interface EncodeOptions {}
-export interface EncoderState {
-  type: typeof type
-  options: EncodeOptions
-}
 
-export const type = 'browser-bmp'
-export const label = 'Browser BMP'
-export const mimeType = 'image/bmp'
-export const extension = 'bmp'
-export const defaultOptions: EncodeOptions = {}
-export const featureTest = () => canvasEncodeTest(mimeType)
+export const browserbmpMeta: EncoderMeta<EncodeOptions> = {
+  type: 'browser-bmp',
+  label: 'Browser BMP',
+  mimeType: 'image/bmp',
+  extensions: ['bmp'],
+  optDescription: {},
+  defaultOptions: {},
+  featureTest() {
+    return canvasEncodeTest(this.mimeType)
+  },
+}

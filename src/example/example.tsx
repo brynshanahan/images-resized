@@ -7,6 +7,7 @@ import { getExampleImage } from './util/get-example-image'
 import { RotateOptions } from 'src/codecs-api/rotate/processor-meta'
 import './styles/screen.scss'
 import { timeToReadable } from './util/time-to-readable'
+import { Fileish } from 'squoosh/src/lib/initial-util'
 
 interface State {
   files: ImageInfo[]
@@ -41,8 +42,10 @@ class App extends React.Component {
   imageObject?: ImageObject
   async componentDidMount() {
     /* Get the image from a fetch.blob or file input */
-    const imageFile = await getExampleImage()
-
+    this.updateImageObject(await getExampleImage())
+  }
+  async updateImageObject(imageFile: File | Fileish) {
+    this.setState({ imageInitialised: false })
     /* Create image object from file */
     const imageObject = new ImageObject(imageFile, imageFile.name, {
       rotation: this.state.rotation,
@@ -71,7 +74,6 @@ class App extends React.Component {
     this.onImageUpdate && this.onImageUpdate()
   }
   processFiles = async () => {
-    console.log('creating sizes')
     const createdSizesPromise = this.imageObject.createAllSizes()
     const startTime = Date.now()
     this.interval = setInterval(() => {
@@ -79,6 +81,11 @@ class App extends React.Component {
     })
     const files = await createdSizesPromise
     clearInterval(this.interval)
+  }
+  onChange = (e: any) => {
+    if (e.target.files) {
+      this.updateImageObject(e.target.files[0])
+    }
   }
   render() {
     const { imageInitialised, files, time } = this.state
@@ -88,6 +95,9 @@ class App extends React.Component {
       <div>
         <div className="original-area">
           <div className="controllers">
+            <label>
+              <input type="file" onChange={this.onChange} />
+            </label>
             {imageInitialised && (
               <button id="start" onClick={this.processFiles}>
                 Start image processing

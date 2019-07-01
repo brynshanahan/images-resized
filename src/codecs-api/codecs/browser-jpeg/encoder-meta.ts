@@ -1,8 +1,14 @@
-export interface EncodeOptions { quality: number; }
-export interface EncoderState { type: typeof type; options: EncodeOptions; }
+import EncoderMeta from '../encoder-meta-interface'
 
-export const type = 'browser-jpeg';
-export const label = 'Browser JPEG';
-export const mimeType = 'image/jpeg';
-export const extension = 'jpg';
-export const defaultOptions: EncodeOptions = { quality: 0.75 };
+export interface EncodeOptions {
+  quality: number
+}
+
+export const browserjpegMeta: EncoderMeta<EncodeOptions> = {
+  type: 'browser-jpeg',
+  label: 'Browser JPEG',
+  mimeType: 'image/jpeg',
+  extensions: ['jpg'],
+  optDescription: {},
+  defaultOptions: { quality: 0.75 },
+}

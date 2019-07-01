@@ -1,7 +1,7 @@
 import optipng, { OptiPngModule } from 'squoosh/codecs/optipng/optipng'
 import wasmUrl from 'squoosh/codecs/optipng/optipng.wasm'
 import { EncodeOptions } from './encoder-meta'
-import { initEmscriptenModule } from '../util'
+import { initEmscriptenModule } from '../../util'
 
 let emscriptenModule: Promise<OptiPngModule>
 

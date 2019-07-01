@@ -1,8 +1,12 @@
-export interface EncodeOptions {}
-export interface EncoderState { type: typeof type; options: EncodeOptions; }
+import EncoderMeta from '../encoder-meta-interface'
 
-export const type = 'browser-png';
-export const label = 'Browser PNG';
-export const mimeType = 'image/png';
-export const extension = 'png';
-export const defaultOptions: EncodeOptions = {};
+export interface EncodeOptions {}
+
+export const browserpngMeta: EncoderMeta<EncodeOptions> = {
+  type: 'browser-png',
+  label: 'Browser PNG',
+  mimeType: 'image/png',
+  extensions: ['png'],
+  optDescription: {},
+  defaultOptions: {},
+}

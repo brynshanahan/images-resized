@@ -1,3 +1,5 @@
+import EncoderMeta from '../encoder-meta-interface'
+
 export enum MozJpegColorSpace {
   GRAYSCALE = 1,
   RGB,
@@ -23,19 +25,12 @@ export interface EncodeOptions {
   chroma_quality: number
 }
 
-interface EncoderMeta<T extends {}> {
-  type: string
-  label: string
-  mimeType: string
-  defaultOptions: T
-  propDesc: { [k in keyof T]?: string } // Descriptions of the specified image property
-}
-
 export const mozjpegMeta: EncoderMeta<EncodeOptions> = {
-  type: 'mozjpeq',
-  label: 'MozJPEQ',
+  type: 'mozjpeg',
+  label: 'MozJPEG',
   mimeType: 'image/jpeg',
-  propDesc: {
+  extensions: ['jpg'],
+  optDescription: {
     quality:
       'Overall quality of an image, lower quality results in a smaller file size',
   },
