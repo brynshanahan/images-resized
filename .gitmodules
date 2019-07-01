@@ -1,0 +1,3 @@
+[submodule "squoosh"]
+  path = ./src/lib/squoosh
+  url = git@github.com:GoogleChromeLabs/squoosh.git
