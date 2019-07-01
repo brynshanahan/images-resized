@@ -1,4 +1,4 @@
-import Processor from './codecs-api/processor'
+import Processor from './processor'
 
 const ROTATE_NONE = 0
 const ROTATE_RIGHT = 90

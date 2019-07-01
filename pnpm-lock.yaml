@@ -1,13 +1,13 @@
 dependencies:
   '@babel/core': 7.4.5
-  '@babel/plugin-proposal-decorators': 7.4.4_@babel+core@7.4.5
+  '@babel/plugin-proposal-decorators': 7.4.4
   '@types/react': 16.8.22
   '@types/react-dom': 16.8.4
   comlink: 3.2.0
   exports-loader: 0.7.0
   react: 16.8.6
-  react-dom: 16.8.6_react@16.8.6
-lockfileVersion: 5.1
+  react-dom: 16.8.6
+lockfileVersion: 5
 packages:
   /@babel/code-frame/7.0.0:
     dependencies:
@@ -46,9 +46,8 @@ packages:
     dev: false
     resolution:
       integrity: sha512-53UOLK6TVNqKxf7RUh8NE851EHRxOOeVXKbK2bivdb+iziMyk03Sr4eaE9OELCbyZAAafAKPDwF2TPUES5QbxQ==
-  /@babel/helper-create-class-features-plugin/7.4.4_@babel+core@7.4.5:
+  /@babel/helper-create-class-features-plugin/7.4.4:
     dependencies:
-      '@babel/core': 7.4.5
       '@babel/helper-function-name': 7.1.0
       '@babel/helper-member-expression-to-functions': 7.0.0
       '@babel/helper-optimise-call-expression': 7.0.0
@@ -128,20 +127,18 @@ packages:
     hasBin: true
     resolution:
       integrity: sha512-9mUqkL1FF5T7f0WDFfAoDdiMVPWsdD1gZYzSnaXsxUCUqzuch/8of9G3VUSNiZmMBoRxT3neyVsqeiL/ZPcjew==
-  /@babel/plugin-proposal-decorators/7.4.4_@babel+core@7.4.5:
+  /@babel/plugin-proposal-decorators/7.4.4:
     dependencies:
-      '@babel/core': 7.4.5
-      '@babel/helper-create-class-features-plugin': 7.4.4_@babel+core@7.4.5
+      '@babel/helper-create-class-features-plugin': 7.4.4
       '@babel/helper-plugin-utils': 7.0.0
-      '@babel/plugin-syntax-decorators': 7.2.0_@babel+core@7.4.5
+      '@babel/plugin-syntax-decorators': 7.2.0
     dev: false
     peerDependencies:
       '@babel/core': ^7.0.0-0
     resolution:
       integrity: sha512-z7MpQz3XC/iQJWXH9y+MaWcLPNSMY9RQSthrLzak8R8hCj0fuyNk+Dzi9kfNe/JxxlWQ2g7wkABbgWjW36MTcw==
-  /@babel/plugin-syntax-decorators/7.2.0_@babel+core@7.4.5:
+  /@babel/plugin-syntax-decorators/7.2.0:
     dependencies:
-      '@babel/core': 7.4.5
       '@babel/helper-plugin-utils': 7.0.0
     dev: false
     peerDependencies:
@@ -360,12 +357,11 @@ packages:
     dev: false
     resolution:
       integrity: sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
-  /react-dom/16.8.6_react@16.8.6:
+  /react-dom/16.8.6:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       prop-types: 15.7.2
-      react: 16.8.6
       scheduler: 0.13.6
     dev: false
     peerDependencies:

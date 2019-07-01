@@ -2,7 +2,7 @@ import { Fileish } from 'squoosh/src/lib/initial-util'
 import { ResizeOptions, resizeImageData } from './resize'
 import { FileContainer } from './file-container'
 import { sniffMimeType } from './util/files/sniff-mime-type'
-import Processor from './codecs-api/processor'
+import Processor from './processor'
 import svgBlobToImg, { svgImgToImageData } from './svg-to-image'
 import { drawableToImageData } from './util/image/drawable-to-image-data'
 import { decodeImage } from './codecs-api/decoders'
@@ -52,14 +52,14 @@ interface ImageInfoContainer {
 }
 
 const processors = {
-  load: new Processor(),
+  load: new Processor()
 }
 
 const defaultImageContainerOpts: ImageInfoContainer = {
   rotationFromOriginal: 0,
   pkg: {},
   sizes: {},
-  margin: 0.2,
+  margin: 0.2
 }
 
 export class ImageContainer extends Subject {
@@ -89,14 +89,14 @@ export class ImageContainer extends Subject {
     }
 
     const file = new Fileish([blob], name || blob.name || `unknown`, {
-      type: blob.type,
+      type: blob.type
     })
 
     return new ImageContainer(
       clone(defaultImageContainerOpts, {
         original: {
-          name: name || blob.name || `unknown`,
-        },
+          name: name || blob.name || `unknown`
+        }
       }),
       file
     )
@@ -122,7 +122,7 @@ export class ImageContainer extends Subject {
         sizeName: 'original',
         fileSize: this.originalFile.size,
         type: this.originalFile.type,
-        name: this.originalFile.name || name,
+        name: this.originalFile.name || name
       }
 
       this.data.original = original
@@ -152,7 +152,10 @@ export class ImageContainer extends Subject {
     if (this.originalFile) {
       this.originalFile
     } else {
-      this.originalFile = await fileFromUrl(this.data.original.url, this.data.original.name)
+      this.originalFile = await fileFromUrl(
+        this.data.original.url,
+        this.data.original.name
+      )
     }
 
     this.isVector = this.originalFile.type.startsWith('image/svg+xml')
@@ -249,7 +252,7 @@ export class ImageContainer extends Subject {
     console.log('Rotating')
     if (this.data.rotationFromOriginal) {
       this.imageData = await rotate(this.imageData, {
-        rotate: this.data.rotationFromOriginal,
+        rotate: this.data.rotationFromOriginal
       })
     }
     console.log('Finished rotating')
@@ -281,7 +284,7 @@ export class ImageContainer extends Subject {
         ...defaultResizeOptions,
         ...imageSize.size,
         // premultiply: false,
-        linearRGB: false,
+        linearRGB: false
         // method: "lanczos3"
       } as WorkerResizeOptions
 
@@ -294,7 +297,7 @@ export class ImageContainer extends Subject {
 
     console.log(`Quantizing ${imageSize.name} image`)
     const quantizerOptions = {
-      ...defaultQuantizeOptions,
+      ...defaultQuantizeOptions
     }
     result = await quantizeImageData(result, quantizerOptions, processor)
 
@@ -318,7 +321,7 @@ export class ImageContainer extends Subject {
       blob: finalFile,
       url: URL.createObjectURL(finalFile),
       width: finalImageData.width,
-      height: finalImageData.height,
+      height: finalImageData.height
     }
 
     this.originalFiles[imageSize.name] = fileContainer
@@ -331,7 +334,7 @@ export class ImageContainer extends Subject {
       type: finalFile.type,
       fit: imageSize.size.fit,
       name: finalFile.name,
-      url: fileContainer.url,
+      url: fileContainer.url
     }
 
     this.emit('update')
@@ -349,7 +352,7 @@ function fileFromUrl(url: string, name?: string) {
     .then(response => response.blob())
     .then(blob => {
       return new Fileish([blob], name || url.split('/').pop(), {
-        type: blob.type,
+        type: blob.type
       })
     })
 }

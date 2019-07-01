@@ -1,5 +1,5 @@
 import { EncoderState, encoderMap } from './codecs-api/encoders'
-import Processor from './codecs-api/processor'
+import Processor from './processor'
 import { Fileish } from 'squoosh/src/lib/initial-util'
 import {
   optipngMeta,
@@ -12,7 +12,7 @@ import {
   browsertiffMeta,
   browserjp2Meta,
   browserbmpMeta,
-  browserpdfMeta,
+  browserpdfMeta
 } from './codecs-api/codecs/codecs'
 
 async function compressImageData(

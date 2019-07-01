@@ -1,6 +1,6 @@
 import { Fileish } from 'squoosh/src/lib/initial-util'
 import { RotateOptions } from './rotate'
-import Processor from './codecs-api/processor'
+import Processor from './processor'
 
 type BrowserResizeMethods =
   | 'browser-pixelated'
@@ -12,7 +12,7 @@ const workerResizeMethods: WorkerResizeMethods[] = [
   'triangle',
   'catrom',
   'mitchell',
-  'lanczos3',
+  'lanczos3'
 ]
 
 export interface ResizeOptionsCommon {
@@ -58,7 +58,7 @@ export const defaultOptions: ResizeOptions = {
   method: 'lanczos3',
   fit: 'contain',
   premultiply: true,
-  linearRGB: true,
+  linearRGB: true
 }
 
 async function resizeVector(

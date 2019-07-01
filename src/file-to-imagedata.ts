@@ -1,4 +1,4 @@
-import Processor from './codecs-api/processor'
+import Processor from './processor'
 import webpDataUrl from './codecs-api/tiny.webp'
 import { nativeDecode, canDecodeImage } from './util/image/decode-image'
 import { sniffMimeType } from './util/files/sniff-mime-type'

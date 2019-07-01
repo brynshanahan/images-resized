@@ -3,26 +3,29 @@ import { proxy } from 'comlink'
 /* Resizers */
 import {
   BrowserResizeOptions,
-  VectorResizeOptions,
-} from './processors/resize/processor-meta'
-import { browserResize, vectorResize } from './processors/resize/processor-sync'
+  VectorResizeOptions
+} from './codecs-api/processors/resize/processor-meta'
+import {
+  browserResize,
+  vectorResize
+} from './codecs-api/processors/resize/processor-sync'
 /* Encoder options */
-import { EncodeOptions as MozJPEGEncoderOptions } from './codecs/mozjpeg/encoder-meta'
-import { EncodeOptions as OptiPNGEncoderOptions } from './codecs/optipng/encoder-meta'
-import { EncodeOptions as WebPEncoderOptions } from './codecs/webp/encoder-meta'
-import { EncodeOptions as BrowserJPEGOptions } from './codecs/browser-jpeg/encoder-meta'
-import { EncodeOptions as BrowserWebpEncodeOptions } from './codecs/browser-webp/encoder-meta'
+import { EncodeOptions as MozJPEGEncoderOptions } from './codecs-api/codecs/mozjpeg/encoder-meta'
+import { EncodeOptions as OptiPNGEncoderOptions } from './codecs-api/codecs/optipng/encoder-meta'
+import { EncodeOptions as WebPEncoderOptions } from './codecs-api/codecs/webp/encoder-meta'
+import { EncodeOptions as BrowserJPEGOptions } from './codecs-api/codecs/browser-jpeg/encoder-meta'
+import { EncodeOptions as BrowserWebpEncodeOptions } from './codecs-api/codecs/browser-webp/encoder-meta'
 /* Processors options */
-import { QuantizeOptions } from './processors/imagequant/processor-meta'
+import { QuantizeOptions } from './codecs-api/processors/imagequant/processor-meta'
 /* The ACTUAL encoders. Not the meta */
-import * as browserBMP from './codecs/browser-bmp/encoder'
-import * as browserPNG from './codecs/browser-png/encoder'
-import * as browserJPEG from './codecs/browser-jpeg/encoder'
-import * as browserWebP from './codecs/browser-webp/encoder'
-import * as browserGIF from './codecs/browser-gif/encoder'
-import * as browserTIFF from './codecs/browser-tiff/encoder'
-import * as browserJP2 from './codecs/browser-jp2/encoder'
-import * as browserPDF from './codecs/browser-pdf/encoder'
+import * as browserBMP from './codecs-api/codecs/browser-bmp/encoder'
+import * as browserPNG from './codecs-api/codecs/browser-png/encoder'
+import * as browserJPEG from './codecs-api/codecs/browser-jpeg/encoder'
+import * as browserWebP from './codecs-api/codecs/browser-webp/encoder'
+import * as browserGIF from './codecs-api/codecs/browser-gif/encoder'
+import * as browserTIFF from './codecs-api/codecs/browser-tiff/encoder'
+import * as browserJP2 from './codecs-api/codecs/browser-jp2/encoder'
+import * as browserPDF from './codecs-api/codecs/browser-pdf/encoder'
 
 /* Util files */
 import { canvasEncode } from 'src/util/canvas/canvas-encode'
@@ -65,7 +68,7 @@ export default class Processor {
       if (!this.worker && needsWorker) {
         this.worker = new Worker('./image-worker/image-worker', {
           name: 'process-worker',
-          type: 'module',
+          type: 'module'
         }) as Worker
         this.workerApi = (proxy(this.worker) as any) as ProcessorWorkerApi
       }
@@ -76,7 +79,7 @@ export default class Processor {
         callback(),
         new Promise((_, reject) => {
           this.abortRejector = reject
-        }),
+        })
       ])
 
       /* We dont care about the error */
@@ -127,14 +130,14 @@ export default class Processor {
 
   rotate = (
     data: ImageData,
-    opts: import('./processors/rotate/processor-meta').RotateOptions
+    opts: import('./codecs-api/processors/rotate/processor-meta').RotateOptions
   ): Promise<ImageData> => {
     return this.workerJob(() => this.workerApi.processors.rotate(data, opts))
   }
 
   workerResize = (
     data: ImageData,
-    opts: import('./processors/resize/processor-meta').WorkerResizeOptions
+    opts: import('./codecs-api/processors/resize/processor-meta').WorkerResizeOptions
   ): Promise<ImageData> => {
     return this.workerJob(() => {
       return this.workerApi.processors.resize(data, opts)
