@@ -1,5 +1,14 @@
 import { drawableToImageData } from './drawable-to-image-data'
-import { blobToImg } from '../files/blob'
+
+async function blobToImg(blob: Blob): Promise<HTMLImageElement> {
+  const url = URL.createObjectURL(blob)
+
+  try {
+    return await decodeImage(url)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
 
 /**
  * Attempts to load the given URL as an image.

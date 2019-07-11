@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom'
 import {
   ImageContainer,
   SingleImageContainer,
-  SingleImageSize
-} from '../image-object'
+  SingleImageSize,
+} from '../src/image-object'
 import { humanFileSize } from './util/human-file-size'
 import { getExampleImage } from './util/get-example-image'
 import { RotateOptions } from 'src/codecs-api/processors/rotate/processor-meta'
@@ -25,39 +25,49 @@ const defaultImageObjectSizes: { [k: string]: SingleImageSize } = {
     size: {
       width: 1920,
       height: 1080,
-      fit: 'contain'
-    }
+      fit: 'contain',
+    },
   },
   medium: {
     name: 'medium',
     size: {
       width: 720,
       height: 480,
-      fit: 'contain'
-    }
+      fit: 'contain',
+    },
   },
   small: {
     name: 'small',
     size: {
       width: 480,
       height: 360,
-      fit: 'contain'
-    }
+      fit: 'contain',
+    },
   },
   tiny: {
     name: 'tiny',
     size: {
       width: 64,
       height: 64,
-      fit: 'contain'
-    }
-  }
+      fit: 'contain',
+    },
+  },
 }
 
-const ImageGroup = ({ src, name, width, height, size }: any) => {
+const ImageGroup = ({ src, name, width, height, size, maxWidth }: any) => {
+  const ref = React.useRef(null)
   return (
     <div className="image-group">
-      <img src={src} />
+      <img
+        src={src}
+        ref={ref}
+        style={
+          maxWidth && {
+            width: width / window.devicePixelRatio,
+            maxWidth: '100%',
+          }
+        }
+      />
       <div className="info">
         <div className="dimensions">
           {name} size: {width}w ❎ {height}h
@@ -73,16 +83,16 @@ class App extends React.Component {
     files: [],
     time: 0,
     rotation: 0,
-    imageInitialised: false
+    imageInitialised: false,
   }
   onImageUpdate?: () => any
   interval: number
   imageObject?: ImageContainer
   async componentDidMount() {
     /* Get the image from a fetch.blob or file input */
-    this.updateImageObject(await getExampleImage())
+    this.getImageObject(await getExampleImage())
   }
-  async updateImageObject(imageFile: File | Fileish) {
+  async getImageObject(imageFile: File | Fileish) {
     this.setState({ imageInitialised: false })
     /* Create image object from file */
     const imageObject = ImageContainer.createFromFile(imageFile)
@@ -94,13 +104,13 @@ class App extends React.Component {
     /* When the imageObject creates a new file it will emit an update event */
     this.onImageUpdate = imageObject.on('update', () => {
       this.setState({
-        files: imageObject.allFiles().sort((a, b) => a.width - b.width)
+        files: imageObject.allFiles().sort((a, b) => a.width - b.width),
       })
     })
 
     /* 
     Load the initial image to get the image dimensions. 
-    Only required if the original image doesn't exist
+    Only required if the original image doesn't exist in the page
     */
     await this.imageObject.initialLoad()
 
@@ -121,7 +131,7 @@ class App extends React.Component {
   }
   onChange = (e: any) => {
     if (e.target.files) {
-      this.updateImageObject(e.target.files[0])
+      this.getImageObject(e.target.files[0])
     }
   }
   render() {
@@ -160,7 +170,7 @@ class App extends React.Component {
               fileSize,
               sizeName,
               width,
-              height
+              height,
             }: SingleImageContainer) => (
               <ImageGroup
                 src={url}
@@ -169,6 +179,7 @@ class App extends React.Component {
                 width={width}
                 height={height}
                 key={sizeName}
+                maxWidth
               />
             )
           )}

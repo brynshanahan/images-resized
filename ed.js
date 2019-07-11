@@ -6,6 +6,7 @@ module.exports = {
     squoosh: path.resolve('./src/lib/squoosh'),
     src: path.resolve('./src'),
   },
+  isModule: true,
   webpack: (config, webpack) => {
     const babel = config.module.rules.find(x =>
       x.loader.includes('babel-loader')

@@ -1,1 +1,7 @@
-import './src/example/example'
+export { default as Processor } from './src/processor'
+export { default as compressImageData } from './src/compress'
+export { default as quantizeImageData } from './src/quantize'
+export { default as rotateImageData } from './src/rotate'
+export { fileToImageData } from './src/file-to-imagedata'
+export { resizeImageData, resizeVector } from './src/resize'
+export * from './src/image-object'
