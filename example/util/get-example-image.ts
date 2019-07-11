@@ -1,5 +1,5 @@
 import { Fileish } from 'squoosh/src/lib/initial-util'
-import image from '../assets/images/screenshot.png'
+import image from '../assets/images/screenshot.jpg'
 
 async function getImage(src: string, name: string) {
   const response = await fetch(src)
