@@ -10,14 +10,17 @@
   "keywords": [],
   "author": "brynshanahan",
   "license": "ISC",
+  "repository": "github:brynshanahan/images-resized",
   "dependencies": {
     "comlink": "3.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
-    "exports-loader": "^0.7.0",
     "@babel/plugin-proposal-decorators": "^7.4.4",
     "@types/react": "^16.8.22",
-    "@types/react-dom": "^16.8.4"
+    "@types/react-dom": "^16.8.4",
+    "exports-loader": "^0.7.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
   }
 }
