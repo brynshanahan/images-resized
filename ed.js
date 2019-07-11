@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  name: 'image-resizer',
+  name: 'images-resized',
   alias: {
     squoosh: path.resolve('./src/lib/squoosh'),
     src: path.resolve('./src'),
